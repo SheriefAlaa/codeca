@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title><%= assigns[:page_title] || "CodecaWeb - Nile University" %></title>
+
+    <%= csrf_meta_tag() %>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">CodecaWeb</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto"></ul> <!--Links go here -->
+      </div>
+    </nav>
+
+    <main role="main">
+      <%# <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) </p> %>
+      <%# <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) </p> %>
+      <%= render @view_module, @view_template, assigns %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="page-footer font-small blue fixed-bottom">
+
+      <!-- Copyright -->
+      <div class="footer-copyright text-center py-3">© 2020 Copyright: Nilecodec
+        <a href="mailto:contact@sherief.dev">Contact Support</a>
+      </div>
+      <!-- Copyright -->
+
+    </footer>
+    <!-- Footer -->
+    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.min.js") %>"></script>
+  </body>
+</html>
