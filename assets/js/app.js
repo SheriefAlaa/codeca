@@ -15,12 +15,7 @@ function pushPeerMessage(type, content) {
   });
 }
 
-const mediaConstraints = {
-  audio: true,
-  video: true,
-};
-
-const devices = navigator.mediaDevices;
+const mediaConstraints = {audio: true, video: true};
 
 const connectButton = document.getElementById('connect');
 const callButton = document.getElementById('call');
@@ -29,75 +24,58 @@ const disconnectButton = document.getElementById('disconnect');
 const remoteVideo = document.getElementById('remote-stream');
 const localVideo = document.getElementById('local-stream');
 
-let audioOutputId = null;
-
 let peerConnection;
-
-
-const offerOptions = {
-  offerToReceiveAudio: 1,
-  offerToReceiveVideo: 1
-};
+let remoteStream = new MediaStream();
 
 disconnectButton.disabled = true;
 callButton.disabled = true;
-connectButton.onclick = function (e) {
-  connect().then((val) => {
-    log('connected');
-  }).catch(function (e) {
-    log('error', e)
-  });
-};
+connectButton.onclick = connect;
 callButton.onclick = call;
 disconnectButton.onclick = disconnect;
 
 async function connect() {
-  log('entered connect!')
   connectButton.disabled = true;
   disconnectButton.disabled = false;
   callButton.disabled = false;
-  const localStream = await devices.getUserMedia(mediaConstraints);
-  // Get audio output device.
-  await navigator.mediaDevices.enumerateDevices().then(getAudioId);
-  changeAudioDestination(localVideo)
+  const localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
   setVideoStream(localVideo, localStream);
   peerConnection = createPeerConnection(localStream);
 }
 
 async function call() {
-  let offer = await peerConnection.createOffer(offerOptions);
+  let offer = await peerConnection.createOffer();
   peerConnection.setLocalDescription(offer);
   pushPeerMessage('video-offer', offer);
 }
 
 function createPeerConnection(stream) {
-  var ICE_config = {
-    'iceServers': [
-      {
-        'url': 'stun:stun.l.google.com:19302'
-      },
-      {
-        'url': 'turn:192.158.29.39:3478?transport=udp',
-        'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-        'username': '28224511:1379330808'
-      },
-      {
-        'url': 'turn:192.158.29.39:3478?transport=tcp',
-        'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-        'username': '28224511:1379330808'
-      }
-    ]
-  }
-
-  // let pc = new RTCPeerConnection({
+  // var ICE_config = {
   //   'iceServers': [
   //     {
-  //       urls: 'stun:stun.stunprotocol.org',
+  //       'url': 'stun:stun.l.google.com:19302'
+  //     },
+  //     {
+  //       'url': 'turn:192.158.29.39:3478?transport=udp',
+  //       'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+  //       'username': '28224511:1379330808'
+  //     },
+  //     {
+  //       'url': 'turn:192.158.29.39:3478?transport=tcp',
+  //       'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+  //       'username': '28224511:1379330808'
   //     }
   //   ]
-  // });
+  // }
 
-  let pc = new RTCPeerConnection(ICE_config);
+  let pc = new RTCPeerConnection({
+    'iceServers': [
+      {
+        urls: 'stun:stun.stunprotocol.org',
+      }
+    ]
+  });
+
+  // let pc = new RTCPeerConnection(ICE_config);
   pc.ontrack = handleOnTrack;
   pc.onicecandidate = handleIceCandidate;
   stream.getTracks().forEach(track => pc.addTrack(track));
@@ -107,8 +85,6 @@ function createPeerConnection(stream) {
 function handleOnTrack(event) {
   log('handleOnTrack')
   log(event);
-  let remoteStream = new MediaStream();
-
   setVideoStream(remoteVideo, remoteStream);
   remoteStream.addTrack(event.track);
 }
@@ -150,6 +126,7 @@ async function answerCall(offer) {
 
 channel.on('peer-message', payload => {
   const message = JSON.parse(payload.body);
+  log('message', message.type)
   switch (message.type) {
     case 'video-offer':
       log('offered: ', message.content);
@@ -178,29 +155,6 @@ function setVideoStream(videoElement, stream) {
   videoElement.srcObject = stream;
 }
 
-// Attach audio output device to video element using device/sink ID.
-function attachSinkId(element, sinkId) {
-  if (typeof element.sinkId !== 'undefined') {
-    element.setSinkId(sinkId)
-        .then(() => {
-          console.log(`Success, audio output device attached: ${sinkId}`);
-        })
-        .catch(error => {
-          let errorMessage = error;
-          if (error.name === 'SecurityError') {
-            errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-          }
-          console.error(errorMessage);
-        });
-  } else {
-    console.warn('Browser does not support output device selection.');
-  }
-}
-
-function changeAudioDestination(videoElement) {
-  attachSinkId(videoElement, audioOutputId);
-}
-
 function unsetVideoStream(videoElement) {
   if (videoElement.srcObject) {
     videoElement.srcObject.getTracks().forEach(track => track.stop());
@@ -215,14 +169,4 @@ const reportError = where => error => {
 
 function log() {
   console.log(...arguments);
-}
-
-
-function getAudioId(deviceInfos) {
-  for (let i = 0; i !== deviceInfos.length; ++i) {
-    const deviceInfo = deviceInfos[i];
-    if (deviceInfo.kind === 'audiooutput') {
-      audioOutputId = deviceInfo.deviceId;
-    }
-  }
 }
