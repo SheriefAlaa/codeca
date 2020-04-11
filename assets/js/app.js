@@ -1,10 +1,5 @@
 import css from '../css/app.scss';
-
-// import 'phoenix_html';
-
 import channel from './socket';
-
-// things
 
 function pushPeerMessage(type, content) {
   channel.push('peer-message', {

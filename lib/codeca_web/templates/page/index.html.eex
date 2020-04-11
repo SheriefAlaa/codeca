@@ -1,8 +1,22 @@
-<label for="local-stream">Local Video Stream</label>
-<video id="local-stream" autoplay muted></video>
-<label for="remote-stream">Remote Video Stream</label>
-<video id="remote-stream" autoplay></video>
+<div class="container-fluid">
+  <div class="row mx-auto">
+    <div class="col mx-auto">
+      <p>Your camera:</p>
+      <video id="local-stream" autoplay muted></video>
+    </div>
 
-<button class="btn btn-primary" id="connect">Connect</button>
-<button class="btn btn-primary" id="call">Call</button>
-<button class="btn btn-danger" id="disconnect">Disconnect</button>
+    <div class="col">
+      <p>Your friend's camera:</p>
+      <video id="remote-stream" autoplay></video>
+    </div>
+  </div>
+
+  <div class="row mx-auto">
+    <div class="col mx-auto">
+      <button class="btn btn-primary" id="connect">Connect</button>
+      <button class="btn btn-primary" id="call">Call</button>
+      <button class="btn btn-danger" id="disconnect">Disconnect</button>
+    </div>
+  </div>
+</div>
+
