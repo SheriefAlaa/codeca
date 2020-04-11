@@ -29,6 +29,8 @@ const disconnectButton = document.getElementById('disconnect');
 const remoteVideo = document.getElementById('remote-stream');
 const localVideo = document.getElementById('local-stream');
 
+let audioOutputId = null;
+
 let peerConnection;
 
 
@@ -55,6 +57,9 @@ async function connect() {
   disconnectButton.disabled = false;
   callButton.disabled = false;
   const localStream = await devices.getUserMedia(mediaConstraints);
+  // Get audio output device.
+  await navigator.mediaDevices.enumerateDevices().then(getAudioId);
+  changeAudioDestination(localVideo)
   setVideoStream(localVideo, localStream);
   peerConnection = createPeerConnection(localStream);
 }
@@ -173,6 +178,29 @@ function setVideoStream(videoElement, stream) {
   videoElement.srcObject = stream;
 }
 
+// Attach audio output device to video element using device/sink ID.
+function attachSinkId(element, sinkId) {
+  if (typeof element.sinkId !== 'undefined') {
+    element.setSinkId(sinkId)
+        .then(() => {
+          console.log(`Success, audio output device attached: ${sinkId}`);
+        })
+        .catch(error => {
+          let errorMessage = error;
+          if (error.name === 'SecurityError') {
+            errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+          }
+          console.error(errorMessage);
+        });
+  } else {
+    console.warn('Browser does not support output device selection.');
+  }
+}
+
+function changeAudioDestination(videoElement) {
+  attachSinkId(videoElement, audioOutputId);
+}
+
 function unsetVideoStream(videoElement) {
   if (videoElement.srcObject) {
     videoElement.srcObject.getTracks().forEach(track => track.stop());
@@ -187,4 +215,14 @@ const reportError = where => error => {
 
 function log() {
   console.log(...arguments);
+}
+
+
+function getAudioId(deviceInfos) {
+  for (let i = 0; i !== deviceInfos.length; ++i) {
+    const deviceInfo = deviceInfos[i];
+    if (deviceInfo.kind === 'audiooutput') {
+      audioOutputId = deviceInfo.deviceId;
+    }
+  }
 }
