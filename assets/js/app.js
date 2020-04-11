@@ -86,15 +86,15 @@ function createPeerConnection(stream) {
     ]
   }
 
-  // let pc = new RTCPeerConnection({
-  //   'iceServers': [
-  //     {
-  //       urls: 'stun:stun.stunprotocol.org',
-  //     }
-  //   ]
-  // });
+  let pc = new RTCPeerConnection({
+    'iceServers': [
+      {
+        urls: 'stun:stun.stunprotocol.org',
+      }
+    ]
+  });
 
-  let pc = new RTCPeerConnection(ICE_config);
+  // let pc = new RTCPeerConnection(ICE_config);
   pc.ontrack = handleOnTrack;
   pc.onicecandidate = handleIceCandidate;
   stream.getTracks().forEach(track => pc.addTrack(track));
