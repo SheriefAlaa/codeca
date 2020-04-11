@@ -30,9 +30,7 @@ const remoteVideo = document.getElementById('remote-stream');
 const localVideo = document.getElementById('local-stream');
 
 let peerConnection;
-let remoteStream = new MediaStream();
 
-setVideoStream(remoteVideo, remoteStream);
 
 const offerOptions = {
   offerToReceiveAudio: 1,
@@ -41,10 +39,10 @@ const offerOptions = {
 
 disconnectButton.disabled = true;
 callButton.disabled = true;
-connectButton.onclick = function(e) {
+connectButton.onclick = function (e) {
   connect().then((val) => {
     log('connected');
-  }).catch(function(e){
+  }).catch(function (e) {
     log('error', e)
   });
 };
@@ -68,7 +66,7 @@ async function call() {
 }
 
 function createPeerConnection(stream) {
-  var ICE_config= {
+  var ICE_config = {
     'iceServers': [
       {
         'url': 'stun:stun.l.google.com:19302'
@@ -104,6 +102,9 @@ function createPeerConnection(stream) {
 function handleOnTrack(event) {
   log('handleOnTrack')
   log(event);
+  let remoteStream = new MediaStream();
+
+  setVideoStream(remoteVideo, remoteStream);
   remoteStream.addTrack(event.track);
 }
 
